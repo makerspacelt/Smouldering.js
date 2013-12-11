@@ -165,6 +165,8 @@
 					canvas,
 					i;
 
+				colours = options.colours || colours;
+
 				height = container.offsetHeight;
 				width = height / 1.618;
 
