@@ -12,13 +12,44 @@
 
 	var Smouldering = Smouldering || function ( options ) {
 
-		var settings = {},
+		var colours = [
+				'#FF4A34',
+				'#FFD500',
+				'#000000',
+			],
+
+			settings = {},
+
+			points = [],
 
 			ctx,
 
 			height,
 
 			width,
+
+			Point = function () {
+
+				this.vx = 0;
+				this.vy = Math.random() * 10;
+				this.x = width * Math.random();
+				this.y = height * Math.random();
+				this.radius = Math.floor( height / 10 * Math.random() ) + height / 5;
+				this.damp = 100;
+				this.theta = 0;
+				this.rad = 3;
+				this.colour = colours[ Math.floor( colours.length * Math.random() ) ];
+
+				this.draw = function () {
+
+					ctx.beginPath();
+					ctx.arc( this.x, this.y, this.radius, 0, 2 * Math.PI, false );
+					ctx.fillStyle = this.colour;
+					ctx.fill();
+
+				};
+
+			},
 
 			shapes = {
 				mask: {
@@ -90,10 +121,49 @@
 				}
 			},
 
+			drawBody = function () {
+
+				var point,
+					i;
+
+				for ( i = points.length - 1; i >= 0; i-- ) {
+
+					point = points[ i ];
+
+					point.theta += Math.random() * 2 - 1;
+					point.vx = ( point.rad * width / 3 * Math.cos( point.theta ) - point.vx ) / point.damp;
+					point.vy += -Math.abs( point.rad * Math.sin( point.theta ) + point.vy ) / point.damp;
+					point.x += point.vx;
+					point.y += -Math.abs( point.vy );
+					points[ i ].draw();
+
+					if ( point.y < 0 - point.radius ) {
+						point.vy = Math.random() * 10;
+						point.y = height + point.radius;
+					}
+
+				}
+
+			},
+
+			draw = function () {
+
+				ctx.clearRect( 0, 0, width, height );
+				ctx.save();
+				shapes.mask.draw();
+				ctx.clip();
+
+				drawBody();
+
+				ctx.restore();
+
+			},
+
 			init = function ( options ) {
 
 				var container = options.container,
-					canvas;
+					canvas,
+					i;
 
 				height = container.offsetHeight;
 				width = height / 1.618;
@@ -108,14 +178,18 @@
 				settings.canvas = canvas;
 				ctx = canvas.getContext('2d');
 
-				ctx.save();
-				shapes.mask.draw();
-				ctx.clip();
+				for ( i = 40; i >= 0; i-- ) {
+					points.push( new Point() );
+				}
 
-				ctx.fillStyle = '#8ED6FF';
-				ctx.fillRect( 0, 0, width, height );
+				(function animate( t ) {
 
-				ctx.restore();
+					var time = t || 0;
+					window.requestAnimationFrame( animate );
+
+					draw();
+
+				}());
 
 			};
 

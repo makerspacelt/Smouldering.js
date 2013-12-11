@@ -1,0 +1,1 @@
+**Smouldering.js** is a JavaScript module for the Heated Mouse Workshop at Kaunas Makerspace.
